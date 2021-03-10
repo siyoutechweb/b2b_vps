@@ -27,7 +27,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $fillable = [
         'name', 'email', 'first_name', 'last_name'
     ];
-    
+
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -56,7 +56,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function getJWTCustomClaims()
     {
         return [
-          
+
             'first_name'      => $this->first_name,
             'last_name'       => $this->last_name,
             'email'           => $this->email,
@@ -116,6 +116,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     // public function salesmanager() {
     //     return $this->belongsToMany()
     // }
+
+    public function product_images() {
+        return $this->hasMany(ProductImage::class, 'user_id');
+    }
     public function catalogs()
     {
         return $this->hasMany(Catalog::class);
@@ -177,8 +181,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
     public function Categories()
     {
-        return $this->hasManyThrough(Category::class, ProductBase::class,'supplier_id','id','id','category_id')->distinct(); 
-        // $sql= hasManyThrough(Category::class, ProductBase::class,'supplier_id','id','id','category_id')->toSQL(); 
+        return $this->hasManyThrough(Category::class, ProductBase::class,'supplier_id','id','id','category_id')->distinct();
+        // $sql= hasManyThrough(Category::class, ProductBase::class,'supplier_id','id','id','category_id')->toSQL();
         // dd($sql);
     }
 
