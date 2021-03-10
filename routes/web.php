@@ -1,4 +1,5 @@
 <?php
+/** @var \Laravel\Lumen\Routing\Router $router */
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,7 @@ $router->get('/key', function () {
 $router->get('/testsupplier', ['uses' => 'Order\SupplierOrdersController@createSupplier']);
 //route for testlogin
 $router->post('/testlogin', ['uses' => 'AuthController@testlogin']);
-    
+
 $router->post('/login', [
     'uses' => 'AuthController@login'
 ]);
@@ -75,7 +76,7 @@ $router->group(['prefix' => 'users'], function () use ($router) {
     $router->get('/', ['uses' => 'User\UsersController@UsersList']);
     $router->get('/{id}', ['uses' => 'User\UsersController@ShowUser']);
     $router->delete('/{id}', ['uses' => 'User\UsersController@deleteUser']);
-    
+
     // $router->post('/addSalesManager', ['uses' => 'User\UsersController@affectSalesManagerToShop']);
 
 });
@@ -99,7 +100,7 @@ $router->group(['prefix' => 'logistic', ['middleware' => 'role:Supplier']], func
 
     $router->post('/', ['uses' => 'Logistics\LogisticServicesController@getLogisticService']);
     $router->post('/cancel', ['uses' => 'Logistics\LogisticServicesController@removeLogisticService']);
-});   
+});
 
 $router->group(['prefix' => 'products'], function () use ($router) {
     $router->group(['middleware' => 'role:Supplier'], function () use ($router) {
@@ -108,7 +109,7 @@ $router->group(['prefix' => 'products'], function () use ($router) {
         $router->post('/addNewProd', ['uses' => 'Product\ProductBasesController@addProductBase']);
         $router->put('/updateProd', ['uses' => 'Product\ProductBasesController@updateProductWithItem']);
         $router->get('/List', ['uses' => 'Product\ProductBasesController@getProductListBySupplier']);
-        
+
         $router->post('/addNewItem', ['uses' => 'Product\ProductItemsController@addItem']);
         $router->post('/addItemCriteria', ['uses' => 'Product\ProductItemsController@addItemCriteria']);
         $router->put('/updateItemCriteria', ['uses' => 'Product\ProductItemsController@updateItemCriteria']);
@@ -125,7 +126,7 @@ $router->group(['prefix' => 'products'], function () use ($router) {
         $router->put('/base/{id}', ['uses' => 'Product\ProductBasesController@updateProductBase']);
     });
     $router->group(['middleware' => 'role:Supplier,SalesManager,Shop_Owner'], function () use ($router) {
-       
+
         $router->get('/ItemList', ['uses' => 'Product\ProductItemsController@getProductItemList']);
         $router->get('/', ['uses' => 'Product\ProductBasesController@getProduct']);
         $router->get('/productList', ['uses' => 'Product\ProductBasesController@getProductList']);
@@ -200,7 +201,7 @@ $router->group(['prefix' => 'categories', 'middleware' => 'role:Super_Admin,Supp
 
 
 $router->group(['prefix' => 'orders'], function () use ($router) {
-    
+
     $router->group(['middleware' => 'role:Shop_Owner'], function () use ($router) {
         $router->post('/', ['uses' => 'Order\ShopOrdersController@addOrder']);
         $router->get('/shop', ['uses' => 'Order\ShopOrdersController@getShopOwnerOrderList']);
@@ -214,7 +215,7 @@ $router->group(['prefix' => 'orders'], function () use ($router) {
         // $router->get('/paid/list', ['uses' => 'Order\SMOrdersController@getPaidOrders']);
     });
 
-    
+
     $router->group(['middleware' => 'role:Supplier'], function () use ($router) {
         $router->get('/invalid', ['uses' => 'Order\SupplierOrdersController@getSupplierInvalid']);
         $router->get('/valid', ['uses' => 'Order\SupplierOrdersController@getSupplierValidOrder']);
@@ -222,14 +223,14 @@ $router->group(['prefix' => 'orders'], function () use ($router) {
         $router->get('/supplier', ['uses' => 'Order\SupplierOrdersController@getSupplierOrderList']);
         $router->put('/{order_id}', ['uses' => 'Order\SupplierOrdersController@updateOrderStatus']);
     });
-    $router->get('/{orderId}', ['uses' => 'Order\OrdersController@getOrderById']);   
-    
-    
+    $router->get('/{orderId}', ['uses' => 'Order\OrdersController@getOrderById']);
+
+
     // $router->post('/test', ['uses' => 'Order\OrdersController@ifSalesmanager']);
-   
+
     // $router->get('/calculateCom', ['uses' => 'Order\OrdersController@calculateCommissionValue']);
-    
-    
+
+
     // $router->get('/getordersbydate', ['uses' => 'Order\OrdersController@GetOrderByDate']);
     // $router->get('/GetOrderBypaymentDate', ['uses' => 'Order\OrdersController@GetOrderBypaymentDate']);
     // $router->get('/GetOrderByprice', ['uses' => 'Order\OrdersController@GetOrderByOrderPrice']);
@@ -240,7 +241,7 @@ $router->group(['prefix' => 'orders'], function () use ($router) {
     // $router->get('/GetOrderBydaterange', ['uses' => 'Order\OrdersController@GetOrderBydaterange']);
     // $router->get('/GetOrderByStatus', ['uses' => 'Order\OrdersController@GetOrderByStatus']);
     // $router->get('/getbestsellingproducts', ['uses' => 'Order\OrdersController@getbestsellingproducts']);
-   
+
 });
 
 
@@ -386,7 +387,7 @@ $router->delete('/image/{id}', ['uses' => 'Product\ProductItemsController@delete
 $router->group(['prefix' => 'slides', ['middleware' => 'role:Supplier']], function () use ($router) {
     $router->post('/', ['uses' => 'Slide\SlidesController@uploadSlide']);
     $router->delete('/{id}', ['uses' => 'Slide\SlidesController@deleteSlide']);
-    
+
 });
 $router->get('/slides', ['uses' => 'Slide\SlidesController@getSlides']);
 
@@ -467,7 +468,7 @@ $router->group(['prefix' => 'payment/method'], function () use ($router) {
         $router->post('/', ['uses' => 'Purchase\FundsController@addPaymentMethod']);
 	$router->get('/list/{id}', ['uses' => 'Purchase\FundsController@getPaymentMethodById']);
         $router->get('/', ['uses' => 'Purchase\FundsController@getPaymentMethods']);
-	
+
         $router->post('/{id}', ['uses' => 'Purchase\FundsController@editPaymentMethod']);
         $router->delete('/{id}', ['uses' => 'Purchase\FundsController@deletePaymentMethod']);
     });
@@ -484,8 +485,8 @@ $router->group(['prefix' => 'payment/method'], function () use ($router) {
 // routes for inventories and warehouses available for supplier
 
 $router->group(['middleware' => 'role:Supplier'], function () use ($router) {
-    
-    
+
+
     $router->group(['prefix' => 'inventory'], function () use ($router) {
         $router->post('/', ['uses' => 'Warehouse\InventoriesController@newInventory']);
         $router->post('/mobile', ['uses' => 'Warehouse\InventoriesController@newInventoryMobile']);
@@ -506,7 +507,7 @@ $router->group(['middleware' => 'role:Supplier'], function () use ($router) {
                 $router->delete('/{id}', ['uses' => 'Warehouse\WarehousesController@deleteWarehouse']);
                 // $router->post('/batch/number', ['uses' => 'Warehouse\WarehousesController@generateBatchNumber']);
                 // $router->post('/tostock', ['uses' => 'Warehouse\WarehousesController@productToStock']);
-                
+
                 // $router->put('/{level_id}', ['uses' => 'Warehouse\WarehousesController@updateLevel']);
             });
 
@@ -525,7 +526,11 @@ $router->post('/wholesalers/assign', ['uses' => 'User\WholesalersController@addw
 $router->delete('/wholesalers/remove/{id}', ['uses' => 'User\WholesalersController@removewholeSalerFromSupplier']);
 
 
-
+$router->group(['prefix' => 'gallery'], function () use ($router) {
+    $router->post('/upload', ['uses' => 'galleryImagesController\galleryImagesController@uploadImages']);
+    $router->get('/all_by_user', ['uses' => 'galleryImagesController\galleryImagesController@get_images_by_user']);
+    $router->delete('/deleteimg', ['uses' => 'galleryImagesController\galleryImagesController@deleteImage']);
+});
 
 
 
