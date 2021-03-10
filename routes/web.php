@@ -529,7 +529,7 @@ $router->delete('/wholesalers/remove/{id}', ['uses' => 'User\WholesalersControll
 $router->group(['prefix' => 'gallery'], function () use ($router) {
     $router->post('/upload', ['uses' => 'galleryImagesController\galleryImagesController@uploadImages']);
     $router->get('/all_by_user', ['uses' => 'galleryImagesController\galleryImagesController@get_images_by_user']);
-    $router->delete('/deleteimg', ['uses' => 'galleryImagesController\galleryImagesController@deleteImage']);
+    $router->delete('/deleteimg/{id}', ['uses' => 'galleryImagesController\galleryImagesController@deleteImage']);
 });
 
 

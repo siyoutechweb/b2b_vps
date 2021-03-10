@@ -57,7 +57,7 @@ class BrandsController extends Controller
         $brand = ProductBrand::find($id);
         if ($request->hasFile('brand_logo')) {
             // Storage::disk('google')->delete($brand->brand_logo);
-            $path = $request->file('brand_logo')->store('brands', 'google');
+            $path = $request->file('brand_logo')->store('brands', 'public');
             $fileUrl = Storage::url($path);
             $brand->brand_logo = $fileUrl;
         }

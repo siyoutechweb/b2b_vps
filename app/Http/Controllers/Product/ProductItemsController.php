@@ -92,7 +92,7 @@ class ProductItemsController extends Controller
         //         $item_image->save();
         //     }
         // }
-    
+
         // if ($product_item->save()) {
 
         //     foreach ($criteria_list as $criteriaItems) {
@@ -193,7 +193,7 @@ class ProductItemsController extends Controller
     public function uploadImages(Request $request)
     {
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('products', 'google');
+            $path = $request->file('file')->store('products', 'public');
             $fileUrl = Storage::url($path);
             $image = new ProductImage();
             $image->image_url = $fileUrl;
@@ -207,7 +207,7 @@ class ProductItemsController extends Controller
     public function deleteImage($id)
     {
         $image = ProductImage::find($id);
-        $isImageDeleted = Storage::disk('google')->delete('products/' . $image->image_name);
+        $isImageDeleted = Storage::disk('public')->delete('products/' . $image->image_name);
         if ($isImageDeleted) {
             $image->delete();
             return response()->json(['msg' => 'Image Deleted'], 200);
@@ -223,7 +223,7 @@ class ProductItemsController extends Controller
         $products_ids= $supplier->product_list()->pluck('id');
         $items = ProductItem::with(['CriteriaBase','images',
                     'product'=>function ($q)use ($keyWord){
-                         $q->with('brand:id,brand_name,brand_logo','category:id,category_name')  
+                         $q->with('brand:id,brand_name,brand_logo','category:id,category_name')
                         ->get();}])
                         ->whereIn('product_base_id',$products_ids)
                         ->whereNull('item_discount_price')
@@ -233,7 +233,7 @@ class ProductItemsController extends Controller
                         {  $q->whereHas('product',function ($q) use ($keyWord){
                             $q->where('product_name', 'like', '%' . $keyWord . '%')
                             // ->orWhere('product_description', 'like', '%' . $keyWord . '%')
-                            ;});   
+                            ;});
                         })
                         ->orderBy('created_at','DESC')->paginate(10);
         return response()->json($items, 200);
@@ -243,16 +243,16 @@ class ProductItemsController extends Controller
 
     /* generate EAN13 Barcode API
      - Necessary Parameters: 'token','chain_id'
-     - optional Parameters: 
+     - optional Parameters:
     */
     public function generateBarcode(Request $request)
     {
-        // $validator = Validator::make($request->all(), 
+        // $validator = Validator::make($request->all(),
         // [ 'product_name' => 'required',
         $supplier = AuthController::me();
         $new_barcode = $this->newBarcode();
 
-        return response()->json($new_barcode); 
+        return response()->json($new_barcode);
 
     }
 

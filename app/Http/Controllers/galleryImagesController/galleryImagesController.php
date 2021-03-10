@@ -17,8 +17,8 @@ class galleryImagesController extends Controller
     }
 
     public function get_images_by_user(){
-        $supplier= AuthController::me();
-        $Images=ProductImage::all()->where('user_id',$supplier->id)->orWhere('user_id',null);
+        $supplier = AuthController::me();
+        $Images=ProductImage::where('user_id',$supplier->id)->orWhereNull('user_id')->get();
         return response()->json($Images);
     }
 
