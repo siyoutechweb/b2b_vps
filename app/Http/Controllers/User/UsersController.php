@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\AuthController;
+use App\Models\Group;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
@@ -99,7 +100,7 @@ class UsersController extends Controller
     }
     public function addSupplier(Request $request)
     {
-      
+
         $password = $request->input('password');
         $user = new User();
         $user->first_name = $request->input('first_name');
@@ -141,7 +142,7 @@ class UsersController extends Controller
         return response()->json(["msg" => "ERROR !"], 500);
     }
 
-    
+
 
     public function addShop_Owner(Request $request)
     {
@@ -433,11 +434,11 @@ class UsersController extends Controller
 
     public function signUp(Request $request)
     {
-        // $validator = Validator::make($request->all(), 
-        // [ 'email' => 'required|email', 
+        // $validator = Validator::make($request->all(),
+        // [ 'email' => 'required|email',
         //   'password' => 'required|min:6',
-        //   'first_name' => 'required', 
-        //   'last_name' => 'required', 
+        //   'first_name' => 'required',
+        //   'last_name' => 'required',
         //   'profil_img' => 'image'  ]);
 
         // if ($validator->fails()) {
@@ -489,9 +490,11 @@ class UsersController extends Controller
         return response()->json(["msg" => "user added successfully !"], 200);
 
     }
+
+
     public function createUsers (Request $request){
 
-        $tmp =User::where('email',$request->input('email'))->orWhere('contact',$request->input('contact'))->first();
+        $tmp =User::where('email',$request->input('email'))->orWhere('phone_num1',$request->input('phone_num1'))->first();
         if($tmp) {
             return response()->json(["msg" => "User already exists !!"]);
         }
@@ -506,7 +509,7 @@ class UsersController extends Controller
         $user->email = $request->input('email');
         $user->description = $request->input('description');
         $user->password = Hash::make($password);
-        $user->contact =$request->input('phone_num1');
+        $user->phone_num1 =$request->input('phone_num1');
         $user->phone_num2 = $request->input('phone_num2');
         $min_price =$request->has('min_price')? $request->input('min_price'):0;
         $logistic_service =$request->has('logistic_service')? $request->input('logistic_service'):0;
@@ -522,23 +525,31 @@ class UsersController extends Controller
         $user->logistic_service = $logistic_service;
         $user->product_visibility = $request->input('product_visibility');
         if ($request->hasFile('profil_img')) {
-            $path = $request->file('profil_img')->store('profils','google');
+            $path = $request->file('profil_img')->store('profils','public');
             $fileUrl = Storage::url($path);
             $user->img_url = $fileUrl;
             $user->img_name = basename($path);
         }
         $role = Role::where('id', $request->role_id)->first();
-    
+
         $role->users()->save($user);
-    
-        
-    
-    
-        return response()->json(["msg" => "user added successfully with role " .$role->name ], 200);
+            $group_list= $request->input('group_list');
+
+            foreach ($group_list as $groupItem) {
+                $group = Group::find($groupItem);
+                $user->group()->attach($group);
+            }
+
+
+
+            return response()->json(["msg" => "user added successfully with role " .$role->name ], 200);
         }
-        
-    
+
+
     }
+
+
+
     public function signUpShop(Request $request)
     {
        $tmp =User::where('email',$request->input('email'))->orWhere('contact',$request->input('contact'))->first();
@@ -622,9 +633,9 @@ class UsersController extends Controller
             "created_at"=>Carbon::now(),
             "updated_at"=>Carbon::now()
             ]);
-                
-          
-        
+
+
+
         return response()->json(["msg" => "user added successfully !"], 200);
 
     }
@@ -651,7 +662,7 @@ class UsersController extends Controller
         //$user->description = $request->input('description');
         //$min_price =$request->has('min_price')? $request->input('min_price'):0;
         //$user->password = Hash::make($password);
-      
+
         $user->adress = $request->input('adress');
         $user->country =$request->input('country');
 	$user->contact =$request->input('contact');
@@ -660,7 +671,7 @@ class UsersController extends Controller
         //$user->longitude = $request->input('lng');
         //$user->latitude = $request->input('lat');
         $user->min_price = 0;
-       
+
         // if ($request->hasFile('profil_img')) {
         //     $path = $request->file('profil_img')->store('profils','google');
         //     $fileUrl = Storage::url($path);
@@ -681,16 +692,16 @@ class UsersController extends Controller
                 "contact" => $user->contact,
 		 "billing_address_1"=>$request->input('billing_address_1'),
       "billing_country"=> $request->input('billing_country'),
-      "billing_city"=>$request->input('billing_city'), 
-      "billing_postal_code"=>$request->input('billing_postal_code') ,               
+      "billing_city"=>$request->input('billing_city'),
+      "billing_postal_code"=>$request->input('billing_postal_code') ,
                 //"min_price"=>0,
                 "role_id" => 1,
                 "activated_account" => 1,]);
                 //echo $s2c_shop;
-            
-                
-          
-        
+
+
+
+
         return response()->json(["msg" => "user updated successfully !"], 200);
 
     }

@@ -200,4 +200,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'email' => 'required|unique:users|max:255',
         'password' => 'required|min:8',
     ];
+
+    public function group()
+    {
+        return  $this->belongsToMany(Group::class, 'group_user', 'user_id', 'group_id');
+    }
+
 }

@@ -535,6 +535,29 @@ $router->group(['prefix' => 'gallery'], function () use ($router) {
 
 
 
+/**
+ * Routes for resource group-controller
+ */
+$router->group(['middleware' => 'role:Super_Admin'], function () use ($router) {
+
+$router->group(['prefix' => 'groups'], function () use ($router) {
+
+$router->get('groups', 'Group_user\GroupController@allgroups');
+$router->get('group/{id}', 'Group_user\GroupController@getgroup');
+$router->post('addgroup', 'Group_user\GroupController@addgroup');
+$router->put('group/{id}', 'Group_user\GroupController@putgroup');
+$router->delete('group/{id}', 'Group_user\GroupController@removegroup');
+//
+
+});
+
+});
 
 
-
+$router->get('addgroup_to/{id}/{id2}', 'Group_user\User_group_Controller@add_group_to_user');
+$router->get('groupuserslist/{id}', 'Group_user\User_group_Controller@get_group_list_by_user');
+//$router->get('get_category_group/', 'Group_user\GroupController@get_category_group');
+$router->get('get_category_group_by_user/{id}', 'Group_user\User_group_Controller@get_category_group_by_user');
+//
+$router->post('add_category_to_group/', 'Group_user\GroupController@add_category_to_group');
+$router->post('revoke_category_from_group/', 'Group_user\GroupController@revoke_category_from_group');
