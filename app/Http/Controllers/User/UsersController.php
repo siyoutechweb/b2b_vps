@@ -23,9 +23,6 @@ use Carbon\Carbon;
 class UsersController extends Controller
 {
 
-    // const MODEL = "App\Users";
-
-    // use RESTActions;
 
     public function __construct()
     {
@@ -48,7 +45,6 @@ class UsersController extends Controller
     public function getInvalidUsers(Request $request)
     {
         $user = AuthController::me();
-	//echo $user;
         if ($user->hasRole('Super_Admin')) {
             $invalidList = user::where('validation', 0)->with('role')->get();
             return response()->json($invalidList, 200);
@@ -68,7 +64,6 @@ class UsersController extends Controller
     public function getInvalidUsersLast(Request $request)
     {
         $user = AuthController::me();
-//echo $user;
         if ($user->hasRole('Super_Admin')) {
             $invalidList = user::where('validation', 0)->with('role')->orderBy('id', 'DESC')->take(10)->get();
             return response()->json($invalidList, 200);
@@ -78,7 +73,6 @@ class UsersController extends Controller
     public function validateUser($user_id)
     {
         $superadmin = AuthController::me();
-	//echo $superadmin->role_id;
         if ($superadmin->hasRole('Super_Admin')) {
             $user = user::findorfail($user_id);
             $user->validation = 1;
@@ -186,55 +180,40 @@ class UsersController extends Controller
 
     public function getSupplierOrderShop()
     {
-        // if (!$user = JWTAuth::parseToken()->authenticate()) {
-        //     return response()->json(["msg" => 'user_not_found'], 404);
-        // }
-        // $data = compact('user');
-        // $supplier = User::where('id', $data['user']['id'])->first();
         $supplier = AuthController::me();
-        return response()->json($supplier->getShopsThroughOrder()->distinct()->with('salesmanagerToShop')->distinct('salesmanagerToShop')->get(), 200);
+        return response()->json($supplier->getShopsThroughOrder()
+                         ->distinct()
+                         ->with('salesmanagerToShop')
+                         ->distinct('salesmanagerToShop')
+                         ->get(), 200);
     }
 
     public function getSupplierSalesmanagerShop()
     {
         $supplier = AuthController::me();
-        // echo $supplier;
-        // return response()->json($supplier->salesmanagerToSupplier()->get());
         $responseData = [];
         $data = $supplier->salesmanagerToSupplier()
-            ->with(['shopOwners' => function ($query) use ($supplier) {
-                $query->wherePivot('supplier_id', $supplier->id)->distinct();
-            }])->distinct()->get();
+                         ->with(['shopOwners' => function ($query) use ($supplier) {
+                            $query->wherePivot('supplier_id', $supplier->id)->distinct();
+                         }])
+                         ->distinct()
+                         ->get();
         foreach ($data as $element) {
-            // echo $element;
             if (sizeof($element['shopOwners'])) {
                 $result = DB::table('supplier_salesmanager_shop_owner')
-                    ->select('commission_amount')
-                    ->where([
-                        ['salesmanager_id', '=', $element['id']],
-                        ['shop_owner_id', '=', $element['shopOwners'][0]->id],
-                        ['supplier_id', '=', $supplier->id]
-                    ])
-                    ->first();
-            } else {
-
+                            ->select('commission_amount')
+                            ->where([['salesmanager_id', '=', $element['id']],['shop_owner_id', '=', $element['shopOwners'][0]->id],['supplier_id', '=', $supplier->id]])
+                            ->first();
+            }else {
                 $result = DB::table('supplier_salesmanager_shop_owner')
-                    ->select('commission_amount')
-                    ->where([
-                        ['salesmanager_id', '=', $element['id']],
-                        // ['shop_owner_id', '=', $element['shopOwners'][0]->id],
-                        ['supplier_id', '=', $supplier->id]
-                    ])
-                    ->first();
+                            ->select('commission_amount')
+                            ->where([['salesmanager_id', '=', $element['id']],['supplier_id', '=', $supplier->id]])
+                            ->first();
             }
             $element['commission_amount'] = $result->commission_amount;
             $responseData[] = $element;
         }
         return $responseData;
-        // return response()->json($supplier->salesmanagerToSupplier()
-        // ->with(['shopOwners' => function ($query) use ($supplier) {
-        //     $query->wherePivot('supplier_id', $supplier->id)->distinct();
-        // }])->distinct()->get());
     }
 
     public function addSalesManagerToSupplier(Request $request)
@@ -274,14 +253,14 @@ class UsersController extends Controller
 
     public function getShopOwnerByEmail(Request $request)
     {
-        // $supplier = AuthController::me();
         $email = $request->input('email');
         $shopsIds = $request->input('shopsIds');
         $shopList = User::where('email', $email)
-            ->whereNotIn('id', $shopsIds)
-            ->whereHas('role', function ($query) {
-                $query->where('name', 'Shop_Owner')->distinct();
-            })->get();
+                        ->whereNotIn('id', $shopsIds)
+                        ->whereHas('role', function ($query) {
+                            $query->where('name', 'Shop_Owner')->distinct();
+                        })
+                        ->get();
         return response()->json($shopList, 200);
     }
 
@@ -291,13 +270,8 @@ class UsersController extends Controller
         $salesManagerId = $request->input('salesmanager_id');
         $shop_owner_id = $request->input('shop_owner_id');
         $commission_amount = $request->input('commission_amount');
-        // $shop_owner = User::find($shop_owner_id);
-        // $salesmanager = User::find($salesManagerId)->first();
-        $row = Supplier_Salesmanager_ShopOwner::where([
-            "supplier_id" => $supplier['id'],
-            "salesmanager_id" => $salesManagerId,
-            "shop_owner_id" => null
-        ])->first();
+        $row = Supplier_Salesmanager_ShopOwner::where(["supplier_id" => $supplier['id'],"salesmanager_id" => $salesManagerId,"shop_owner_id" => null])
+                                              ->first();
         if ($row) {
             $row->shop_owner_id = $shop_owner_id;
             $row->commission_amount = $commission_amount;
@@ -325,8 +299,7 @@ class UsersController extends Controller
     {
         $supplier = AuthController::me();
         $shop_owner_id = $request->input('shop_owner_id');
-        if($supplier->shop_owners()->where('shop_owner_id',$shop_owner_id)->exists())
-        {
+        if($supplier->shop_owners()->where('shop_owner_id',$shop_owner_id)->exists()){
             return response()->json(["msg" => 'data already exists'], 200);
         }
         else {
@@ -352,22 +325,25 @@ class UsersController extends Controller
     public function getSupplierList()
     {
         $supplierList = User::whereHas('role', function ($query) {
-            $query->where('name', '=', 'Supplier');
-        })->get();
+                                $query->where('name', '=', 'Supplier');
+                            })
+                            ->get();
         return response()->json($supplierList, 200);
     }
     public function getShopsList()
     {
         $shoplist = User::whereHas('role', function ($query) {
-            $query->where('name', '=', 'Shop_Owner ')->orwhere('name', '=', 'Shop_Manager');
-        })->get();
+                            $query->where('name', '=', 'Shop_Owner ')->orwhere('name', '=', 'Shop_Manager');
+                        })
+                        ->get();
         return response()->json($shoplist, 200);
     }
     public function getSalesManagersList()
     {
         $SMList = User::whereHas('role', function ($query) {
-            $query->where('name', '=', 'SalesManager');
-        })->get();
+                            $query->where('name', '=', 'SalesManager');
+                      })
+                      ->get();
         return response()->json($SMList, 200);
     }
     public function deleteUser($id)
@@ -483,8 +459,8 @@ class UsersController extends Controller
                 "contact" => $user->contact,
                 "role_id" => 1,
                 "activated_account" => 1,
-		"created_at"=>Carbon::now(),
-		"updated_at"=>Carbon::now()]);
+		        "created_at"=>Carbon::now(),
+		        "updated_at"=>Carbon::now()]);
                 return response()->json(["shop_owner_id" => $s2c_shop], 200);
         }
         return response()->json(["msg" => "user added successfully !"], 200);
@@ -500,19 +476,69 @@ class UsersController extends Controller
         }
 
         if($request->input('role_id') == 3) {
-             return $this->signUpShop($request);
+            return $this->signUpShop($request);
+        }else if($request->input('role_id') == 6) {
+            return $this->signUpCompany($request);
         } else {
             $password = $request->input('password');
+            $user = new User();
+            $user->first_name = $request->input('first_name');
+            $user->last_name = $request->input('last_name');
+            $user->email = $request->input('email');
+            $user->description = $request->input('description');
+            $user->password = Hash::make($password);
+            $user->phone_num1 =$request->input('phone_num1');
+            $user->phone_num2 = $request->input('phone_num2');
+            $min_price =$request->has('min_price')? $request->input('min_price'):0;
+            $logistic_service =$request->has('logistic_service')? $request->input('logistic_service'):0;
+            $user->tax_number =$request->input('tax_number');
+            $user->first_resp_name = $request->input('first_resp_name');
+            $user->adress = $request->input('adress');
+            $user->country =$request->input('country');
+            $user->region = $request->input('region');
+            $user->postal_code =$request->input('postal_code');
+            $user->longitude = $request->input('lng');
+            $user->latitude = $request->input('lat');
+            $user->min_price =$min_price ;
+            $user->logistic_service = $logistic_service;
+            $user->product_visibility = $request->input('product_visibility');
+            if ($request->hasFile('profil_img')) {
+                $path = $request->file('profil_img')->store('profils','public');
+                $fileUrl = Storage::url($path);
+                $user->img_url = $fileUrl;
+                $user->img_name = basename($path);
+            }
+            $role = Role::where('id', $request->role_id)->first();
+
+            $role->users()->save($user);
+            $group_list= $request->input('group_list');
+            foreach ($group_list as $groupItem) {
+                $group = Group::find($groupItem);
+                $user->group()->attach($group);
+            }
+            return response()->json(["msg" => "user added successfully with role " .$role->name ], 200);
+        }
+
+
+    }
+
+    public function signUpCompany(Request $request)
+    {
+        $tmp =User::where('email',$request->input('email'))->orWhere('contact',$request->input('contact'))->first();
+        if($tmp) {
+            return response()->json(["msg" => "User already exists !!"]);
+        }
+        $password = $request->input('password');
+        $user_role = $request->input('role_id');
         $user = new User();
         $user->first_name = $request->input('first_name');
         $user->last_name = $request->input('last_name');
         $user->email = $request->input('email');
         $user->description = $request->input('description');
-        $user->password = Hash::make($password);
-        $user->phone_num1 =$request->input('phone_num1');
-        $user->phone_num2 = $request->input('phone_num2');
         $min_price =$request->has('min_price')? $request->input('min_price'):0;
-        $logistic_service =$request->has('logistic_service')? $request->input('logistic_service'):0;
+        $user->password = Hash::make($password);
+        $user->contact =$request->input('contact');
+        $user->phone_num2 = $request->input('phone_num2');
         $user->tax_number =$request->input('tax_number');
         $user->first_resp_name = $request->input('first_resp_name');
         $user->adress = $request->input('adress');
@@ -521,34 +547,88 @@ class UsersController extends Controller
         $user->postal_code =$request->input('postal_code');
         $user->longitude = $request->input('lng');
         $user->latitude = $request->input('lat');
-        $user->min_price =$min_price ;
-        $user->logistic_service = $logistic_service;
-        $user->product_visibility = $request->input('product_visibility');
+        $user->min_price = 0;
         if ($request->hasFile('profil_img')) {
-            $path = $request->file('profil_img')->store('profils','public');
+            $path = $request->file('profil_img')->store('profils','google');
             $fileUrl = Storage::url($path);
             $user->img_url = $fileUrl;
             $user->img_name = basename($path);
         }
-        $role = Role::where('id', $request->role_id)->first();
-
+        $role = Role::where('id', $user_role)->first();
         $role->users()->save($user);
-            $group_list= $request->input('group_list');
-
-            foreach ($group_list as $groupItem) {
-                $group = Group::find($groupItem);
-                $user->group()->attach($group);
-            }
-
-
-
-            return response()->json(["msg" => "user added successfully with role " .$role->name ], 200);
-        }
-
-
+        $s2c_shop = DB::connection('S2C')->table('users')->insertGetId(
+            ["first_name" => $user->first_name,
+            "last_name" => $user->last_name,
+            "email" => $user->email,
+            "password" => $user->password,
+            "contact" => $user->contact,
+            "hide_cost_price"=>0,
+            "role_id" => 1,
+            "activated_account" => 1,
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+        $s2c_company = DB::connection('S2C')->table('companies')->insertGetId([
+            "company_name" => $request->input('company_name'),
+            "email" => $user->email,
+            "phone_num1"=>$user->contact,
+            "phone_num2"=>$request->input('phone_num2'),
+            "contact" => $user->contact,
+            "first_responsible"=>$request->input('first_responsible'),
+            'owner_id'=>$s2c_shop,
+            'tax_number'=>$request->input('tax_number'),
+            "address" => $request->input('address'),
+            'zip_code'=>$request->input('zip_code'),
+            "city"=>$request->input('city'),
+            "state_province"=>$request->input('state_province'),
+            "country"=>$request->input('country'),
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+        $new_store = DB::connection('S2C')->table('shops')->insertGetId([
+            "store_name" => 'store-'.$user->firstname,
+            "store_name_en" => 'store-'.$user->firstname,
+            "store_name_it" =>  'store-'.$user->firstname,
+            "shop_owner_id" => $s2c_shop,
+            'company_id'=>$s2c_company,
+		    "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+        $company_shop = DB::connection('S2C')->table('company_shop')->insertGetId([
+            'company_id'=>$s2c_company,
+            'shop_id'=>$new_store,
+		    "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()           
+            ]);
+        $new_chain = DB::connection('S2C')->table('chains')->insertGetId([
+                "chain_name" => 'chain-'.$user->firstname,
+                "adress" => 'chain-'.$user->firstname,
+                "store_id"=>$new_store,
+                "shop_owner_id" => $s2c_shop,
+                'company_id'=>$s2c_company,
+                'approved'=>1,
+                "created_at"=>Carbon::now(),
+                "updated_at"=>Carbon::now()
+                ]);
+        $company_chain = DB::connection('S2C')->table('company_shop')->insertGetId([
+                'company_id'=>$s2c_company,
+                'chain_id'=>$new_chain,
+                "created_at"=>Carbon::now(),
+                "updated_at"=>Carbon::now()           
+                ]);
+        $new_license = DB::connection('S2C')->table('licenses')->insertGetId(
+            ["shop_owner_id"=>$s2c_shop,
+            "max_chains"=>1,
+            "max_managers"=>3,
+            "max_operators"=>3,
+            "max_cachiers"=>3,
+            "start_date"=>date('Y-m-d'),
+            "finish_date"=>date('Y-m-d', strtotime('+1 year')),
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+        return response()->json(["msg" => "user added successfully !"], 200);
     }
-
-
 
     public function signUpShop(Request $request)
     {
@@ -565,7 +645,6 @@ class UsersController extends Controller
         $user->description = $request->input('description');
         $min_price =$request->has('min_price')? $request->input('min_price'):0;
         $user->password = Hash::make($password);
-        //$user->min_price = 0;
         $user->contact =$request->input('contact');
         $user->phone_num2 = $request->input('phone_num2');
         $user->tax_number =$request->input('tax_number');
@@ -577,9 +656,6 @@ class UsersController extends Controller
         $user->longitude = $request->input('lng');
         $user->latitude = $request->input('lat');
         $user->min_price = 0;
-        //$request->input('min_price');
-        // $user->logistic_service = $request->input('logistic_service');
-        // $user->product_visibility = $request->input('product_visibility');
         if ($request->hasFile('profil_img')) {
             $path = $request->file('profil_img')->store('profils','google');
             $fileUrl = Storage::url($path);
@@ -587,43 +663,39 @@ class UsersController extends Controller
             $user->img_name = basename($path);
         }
         $role = Role::where('id', $user_role)->first();
-            //echo $role;
-
-            $role->users()->save($user);
-            //$user->save();
-            //echo "saved";
-            $s2c_shop = DB::connection('S2C')->table('users')->insertGetId(
-                ["first_name" => $user->first_name,
-                "last_name" => $user->last_name,
-                "email" => $user->email,
-                "password" => $user->password,
-                "contact" => $user->contact,
-                "hide_cost_price"=>0,
-                "role_id" => 1,
-                "activated_account" => 1,
-		"created_at"=>Carbon::now(),
-		"updated_at"=>Carbon::now()]);
-            $new_store = DB::connection('S2C')->table('shops')->insertGetId(
-                ["store_name" => $request->input('store_name'),
-                "store_name_en" => $request->input('store_name_en'),
-                "store_name_it" =>  $request->input('store_name_it'),
-                "store_area" =>  $request->input('store_area'),
-                "store_domain" =>  $request->input('store_domain'),
-                "store_adress" => $request->input('store_adress'),
-                "contact" => $request->input('store_contact'),
-                "store_longitude" => $request->input('store_longitude'),
-                "store_latitude" => $request->input('store_latitude'),
-                "opening_hour" => $request->input('opening_hour'),
-                "closure_hour" => $request->input('closure_hour'),
-                "store_ip" => $request->input('store_ip'),
-                "store_is_selfsupport" => $request->input('store_is_selfsupport'),
-                "shop_owner_id" => $s2c_shop,
-		"created_at"=>Carbon::now(),
-        "updated_at"=>Carbon::now()]);
-        //id, shop_owner_id, max_chains, max_managers, max_cachiers, start_date, finish_date, created_at, updated_at, max_operators
-        $new_license = DB::connection('S2C')->table('licenses')->insertGetId(
-            [
-            "shop_owner_id"=>$s2c_shop,
+        $role->users()->save($user);
+        $s2c_shop = DB::connection('S2C')->table('users')->insertGetId(
+            ["first_name" => $user->first_name,
+            "last_name" => $user->last_name,
+            "email" => $user->email,
+            "password" => $user->password,
+            "contact" => $user->contact,
+            "hide_cost_price"=>0,
+            "role_id" => 1,
+            "activated_account" => 1,
+            "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+        $new_store = DB::connection('S2C')->table('shops')->insertGetId(
+            ["store_name" => $request->input('store_name'),
+            "store_name_en" => $request->input('store_name_en'),
+            "store_name_it" =>  $request->input('store_name_it'),
+            "store_area" =>  $request->input('store_area'),
+            "store_domain" =>  $request->input('store_domain'),
+            "store_adress" => $request->input('store_adress'),
+            "contact" => $request->input('store_contact'),
+            "store_longitude" => $request->input('store_longitude'),
+            "store_latitude" => $request->input('store_latitude'),
+            "opening_hour" => $request->input('opening_hour'),
+            "closure_hour" => $request->input('closure_hour'),
+            "store_ip" => $request->input('store_ip'),
+            "store_is_selfsupport" => $request->input('store_is_selfsupport'),
+            "shop_owner_id" => $s2c_shop,
+		    "created_at"=>Carbon::now(),
+            "updated_at"=>Carbon::now()
+            ]);
+            $new_license = DB::connection('S2C')->table('licenses')->insertGetId(
+            ["shop_owner_id"=>$s2c_shop,
             "max_chains"=>1,
             "max_managers"=>3,
             "max_operators"=>3,
@@ -641,63 +713,37 @@ class UsersController extends Controller
     }
    public function updateShopOwner(Request $request,$id)
     {
-	$user = AuthController::me();
-	$user_email = $user->email;
-       //$tmp =User::where('email',$request->input('email'))->orWhere('contact',$request->input('contact'))->first();
-       $shop_owner =DB::connection('S2C')->table('users')->where('id',$id)->first();
+	    $user = AuthController::me();
+	    $user_email = $user->email;
+        $shop_owner =DB::connection('S2C')->table('users')->where('id',$id)->first();
         $email = $shop_owner->email;
-	if($user_email != $email) {
-		//return response()->json(['code'=>0,'msg'=>'not allowed']);
+	    if($user_email != $email) {
         }
         $user = User::where('email',$email)->first();
         if(!$shop_owner || !$user) {
             return response()->json(["msg" => "User not found !!"]);
         }
-       $password = $request->input('password');
-        //user_role = $request->input('role_id');
-        //$user = new User();
+        $password = $request->input('password');
         $user->first_name = $request->input('first_name');
         $user->last_name = $request->input('last_name');
         $user->email = $request->input('email');
-        //$user->description = $request->input('description');
-        //$min_price =$request->has('min_price')? $request->input('min_price'):0;
-        //$user->password = Hash::make($password);
-
         $user->adress = $request->input('adress');
         $user->country =$request->input('country');
-	$user->contact =$request->input('contact');
-        //$user->region = $request->input('region');
-        //$user->postal_code =$request->input('postal_code');
-        //$user->longitude = $request->input('lng');
-        //$user->latitude = $request->input('lat');
+	    $user->contact =$request->input('contact');
         $user->min_price = 0;
-
-        // if ($request->hasFile('profil_img')) {
-        //     $path = $request->file('profil_img')->store('profils','google');
-        //     $fileUrl = Storage::url($path);
-        //     $user->img_url = $fileUrl;
-        //     $user->img_name = basename($path);
-        // }
-        //$role = Role::where('id', $user_role)->first();
-           // echo $role;
-
-            //$role->users()->save($user);
-            $user->save();
-            //echo "saved";
-          DB::connection('S2C')->table('users')->where('id',$id)->update(
-                ["first_name" => $user->first_name,
-                "last_name" => $user->last_name,
-                "email" => $user->email,
-                //"password" => $user->password,
-                "contact" => $user->contact,
-		 "billing_address_1"=>$request->input('billing_address_1'),
-      "billing_country"=> $request->input('billing_country'),
-      "billing_city"=>$request->input('billing_city'),
-      "billing_postal_code"=>$request->input('billing_postal_code') ,
-                //"min_price"=>0,
-                "role_id" => 1,
-                "activated_account" => 1,]);
-                //echo $s2c_shop;
+        $user->save();
+        DB::connection('S2C')->table('users')->where('id',$id)->update(
+            ["first_name" => $user->first_name,
+            "last_name" => $user->last_name,
+            "email" => $user->email,
+            "contact" => $user->contact,
+		    "billing_address_1"=>$request->input('billing_address_1'),
+            "billing_country"=> $request->input('billing_country'),
+            "billing_city"=>$request->input('billing_city'),
+            "billing_postal_code"=>$request->input('billing_postal_code') ,
+            "role_id" => 1,
+            "activated_account" => 1,
+            ]);
 
 
 
