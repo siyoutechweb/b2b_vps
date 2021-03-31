@@ -27,7 +27,9 @@ $router->post('/testlogin', ['uses' => 'AuthController@testlogin']);
 $router->post('/login', [
     'uses' => 'AuthController@login'
 ]);
-
+$router->post('/loginkeylocktest', [
+    'uses' => 'AuthController@logwithkeylock'
+]);
 //$router->post('/sign_up', ['uses' => 'User\UsersController@signUp']);
 $router->post('/sign_up/shop', ['uses' => 'User\UsersController@signUpShop']);
 $router->get('/test/{order_id}', ['uses' => 'Order\ShopOrdersController@ifSalesmanager']);
@@ -185,6 +187,8 @@ $router->group(['prefix' => 'categories', 'middleware' => 'role:Super_Admin,Supp
     $router->post('/criteria', ['uses' => 'Category\CategoriesController@addCriteria']);
     $router->get('/supplier', ['uses' => 'Category\CategoriesController@getSupplierCategories']);
     $router->get('/', ['uses' => 'Category\CategoriesController@getCategories']);
+    $router->get('/get_category_group_by_user/', 'Group_user\User_group_Controller@get_category_group_by_user');
+
     $router->get('/list', ['uses' => 'Category\CategoriesController@getMobileCategories']);
     $router->post('/', ['uses' => 'Category\CategoriesController@addCategory']);
     $router->get('/getmostusedcategories', ['uses' => 'Category\CategoriesController@getmostusedcategories']);
@@ -557,7 +561,6 @@ $router->delete('group/{id}', 'Group_user\GroupController@removegroup');
 $router->get('addgroup_to/{id}/{id2}', 'Group_user\User_group_Controller@add_group_to_user');
 $router->get('groupuserslist/{id}', 'Group_user\User_group_Controller@get_group_list_by_user');
 //$router->get('get_category_group/', 'Group_user\GroupController@get_category_group');
-$router->get('get_category_group_by_user/{id}', 'Group_user\User_group_Controller@get_category_group_by_user');
 //
 $router->post('add_category_to_group/', 'Group_user\GroupController@add_category_to_group');
 $router->post('revoke_category_from_group/', 'Group_user\GroupController@revoke_category_from_group');

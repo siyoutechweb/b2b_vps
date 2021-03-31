@@ -1,12 +1,16 @@
 <?php namespace App\Http\Controllers\Group_user;
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class User_group_Controller extends Controller {
-
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
     public function add_group_to_user($iduser,$idGroup){
         $user=User::find($iduser);
         $group=Group::find($idGroup);
@@ -33,8 +37,8 @@ class User_group_Controller extends Controller {
              "data" => $group_array
          ]);
     }
-    public function get_category_group_by_user($iduser){
-        $user=User::find($iduser);
+    public function get_category_group_by_user(){
+        $user = AuthController::me();
         $catego_list=[];
         foreach ($user->group as $groupuser) {
             $Group=Group::where('id',$groupuser->id)->with(['categorie'=>function ($query)
@@ -42,7 +46,6 @@ class User_group_Controller extends Controller {
             ])->get();
             array_push($catego_list,$Group);
         }
-
         return response()->json([
             "success" => true,
             "message" => "category list for user ss ".$user->first_name,

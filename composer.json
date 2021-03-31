@@ -9,6 +9,7 @@
         "barryvdh/laravel-cors": "^0.11.4",
         "fzaninotto/faker": "^1.9",
         "google/cloud-storage": "^1.17",
+        "guzzlehttp/guzzle": "^6.0",
         "laravel/lumen-framework": "5.8.*",
         "league/flysystem": "^1.0",
         "phpoffice/phpspreadsheet": "^1.9",

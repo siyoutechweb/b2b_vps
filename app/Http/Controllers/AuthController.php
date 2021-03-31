@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
@@ -15,15 +16,38 @@ class AuthController extends Controller
 
     // use RESTActions;
 
-    public function __construct()
+   /* public function __construct()
     {
         $this->middleware('auth:api', ['except' => ['login']]);
         $this->middleware('role', ['except' => ['login','me']]);
-    }
+    }*/
 
     public function test() {
         return response()->json(["msg" => "test ok !!"]);
     }
+
+
+    public function logwithkeylock(Request $request){
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post('https://siyoumarket.es:8443/auth/realms/siyou-auth/protocol/openid-connect/token', [
+            'client_id' => 'siyouLaravel',
+            'grant_type' => 'password',
+            'scope' => 'openid',
+            'client_secret'=>'c8f5047b-207d-4a5a-8956-073e0213ec0d',
+            'username'=>$request->input('username'),
+            'password'=>$request->input('password')
+
+
+        ]);
+        return response()->json(["data" => $response]);
+
+    }
+
+
+
+
+
     public function login(Request $request)
     {
         // $email = $request->input('email');
@@ -69,7 +93,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'user' => $userData,
-            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60 
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60
         ]);
     }
     public function credentials(Request $request) {
@@ -90,12 +114,12 @@ class AuthController extends Controller
          $email = JWTAuth::getPayload()->get('email');
 	//return $email;
 	        // $user = user::where('email',$email)->first();
-        $contact = JWTAuth::getPayload()->get('contact');
+        $contact = JWTAuth::getPayload()->get('phone_num1');
 	//return  $contact;
-        $user = User::where('email','=',$email)->where('contact', $contact)->first();
+        $user = User::where('email','=',$email)->where('phone_num1', $contact)->first();
         return $user;
     }
-    
+
     public function infos() {
         return response()->json(['msg' => 'Data ok!']);
     }
